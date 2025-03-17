@@ -1,0 +1,37 @@
+### Listar todos os produtos
+GET http://localhost:8080/api/produtos
+
+### Obter produto por ID
+GET http://localhost:8080/api/produtos/1
+
+### Criar um novo produto
+POST http://localhost:8080/api/produtos
+Content-Type: application/json
+
+{
+  "nome": "Produto Novo",
+  "preco": 600.0,
+  "estoque": 20
+}
+
+### Atualizar um produto
+PUT http://localhost:8080/api/produtos/2
+Content-Type: application/json
+
+{
+  "nome": "Produto Atualizado",
+  "preco": 750.0,
+  "estoque": 15
+}
+
+### Atualizar parcialmente um produto
+PATCH http://localhost:8080/api/produtos/3
+Content-Type: application/json
+
+{
+  "preco": 800.0
+}
+
+
+### Excluir um produto
+DELETE http://localhost:8080/api/produtos/4
