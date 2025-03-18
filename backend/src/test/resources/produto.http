@@ -9,14 +9,24 @@ Content-Type: application/json
 GET http://localhost:8080/api/produtos/1
 Content-Type: application/json
 
-### Criar novo produto
+### Criar novo produto (estoque nulo: gera erro de validação)
 POST http://localhost:8080/api/produtos
 Content-Type: application/json
 
 {
   "nome": "Produto Exemplo",
-  "descricao": "Descrição de exemplo",
   "preco": 100.0,
+  "categoria": "Eletrônicos"
+}
+
+### Criar novo produto
+POST http://localhost:8080/api/produtos
+Content-Type: application/json
+
+{
+  "nome": "Roteador Wireless TP-Link Archer C6",
+  "preco": 249.90,
+  "estoque": 20,
   "categoria": "Eletrônicos"
 }
 
@@ -25,10 +35,13 @@ PUT http://localhost:8080/api/produtos/1
 Content-Type: application/json
 
 {
-  "nome": "Produto Atualizado",
-  "descricao": "Nova descrição",
-  "preco": 120.0,
-  "categoria": "Escritório"
+  "nome": "iPhone 14",
+  "preco": 4999.0,
+  "estoque": 10,
+  "categorias": [
+    "Eletrônicos",
+    "Smartphones"
+  ]
 }
 
 ### Atualizar parcialmente o produto (PATCH)
