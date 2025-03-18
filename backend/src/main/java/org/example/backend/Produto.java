@@ -10,7 +10,6 @@ import java.util.List;
 
 public class Produto {
 
-    @NotNull(message = "O ID não pode ser nulo.")
     private Long id;
 
     @NotBlank(message = "O nome não pode ser vazio.")

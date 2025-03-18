@@ -16,8 +16,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/produtos")
 public class ProdutoController {
 
+    // Lista em memória para simular o banco de dados para armazenar os produtos.
     final private List<Produto> produtos = new ArrayList<>();
 
+    /**
+     * Metodo de inicialização utilizado para popular a lista de produtos, somente para testes ou simulação.
+     * Esse metodo é executado automaticamente após a construção da classe (@PostConstruct).
+     */
     @PostConstruct
     public void init() {
         produtos.add(new Produto(IdGenerator.nextId(Produto.class), "iPhone 14", 7999.0, 50, List.of("Eletrônicos", "Smartphones")));
@@ -25,6 +30,18 @@ public class ProdutoController {
         produtos.add(new Produto(IdGenerator.nextId(Produto.class), "Notebook Dell Inspiron", 4999.0, 20, List.of("Eletrônicos", "Computadores")));
     }
 
+    /**
+     * Endpoint para buscar produtos. Suporta filtros, ordenação e paginação configuráveis por parâmetros de requisição.
+     *
+     * @param nome         Filtro para buscar produtos pelo nome (opcional).
+     * @param precoMinimo  Filtro para buscar produtos com preço maior ou igual a um valor especificado (opcional).
+     * @param categorias   Lista de categorias a serem usadas como filtro (opcional).
+     * @param ordenarPor   Campo pelo qual os produtos serão ordenados (opcional, padrão: "nome").
+     * @param ordem        Ordem da lista: ascendente (asc) ou descendente (desc) (opcional, padrão: "asc").
+     * @param pagina       Número da página para paginação (opcional).
+     * @param tamanho      Tamanho da página (quantidade de itens por página) (opcional).
+     * @return Lista de produtos filtrada, ordenada e paginada.
+     */
     @GetMapping
     public ResponseEntity<List<Produto>> buscarProdutos(
             @RequestParam(name = "nome", required = false) String nome,
@@ -50,6 +67,12 @@ public class ProdutoController {
         return ResponseEntity.ok(produtosFiltrados);
     }
 
+    /**
+     * Busca um único produto pelo seu identificador (ID).
+     *
+     * @param id O ID do produto a ser buscado.
+     * @return Produto encontrado ou erro 404 caso o produto não exista.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Produto> buscarProdutoById(@PathVariable Long id) {
         Produto produto = produtos.stream()
@@ -64,6 +87,12 @@ public class ProdutoController {
         }
     }
 
+    /**
+     * Cria um novo produto a partir das informações fornecidas no corpo da requisição (JSON).
+     *
+     * @param produto O objeto Produto enviado no corpo da requisição (deve ser válido).
+     * @return O produto criado, com código HTTP 201 (Created).
+     */
     @PostMapping
     public ResponseEntity<Produto> criarProduto(@Valid @RequestBody Produto produto) {
         produto.setId(IdGenerator.nextId(Produto.class));
@@ -71,6 +100,12 @@ public class ProdutoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(produto);
     }
 
+    /**
+     * Exclui um produto existente pelo seu identificador (ID).
+     *
+     * @param id O ID do produto a ser excluído.
+     * @return Código HTTP 204 (No Content) se a exclusão for bem-sucedida.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> exlcuirProduto(@PathVariable Long id) {
         Produto produto = produtos.stream()
@@ -82,6 +117,13 @@ public class ProdutoController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * Atualiza completamente os dados de um produto existente pelo ID.
+     *
+     * @param id               O ID do produto que será atualizado.
+     * @param produtoAtualizado O objeto Produto atualizado enviado no corpo da requisição.
+     * @return O produto atualizado ou erro 404 caso o produto não exista.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<Produto> atualizarProduto(@PathVariable Long id, @Valid @RequestBody Produto produtoAtualizado) {
         Produto produto = produtos.stream()
@@ -95,7 +137,13 @@ public class ProdutoController {
         return new ResponseEntity<>(produto, HttpStatus.OK);
     }
 
-
+    /**
+     * Atualiza parcialmente os dados de um produto existente pelo ID.
+     *
+     * @param id     O ID do produto a ser atualizado.
+     * @param fields Um mapa contendo os campos e valores a serem atualizados.
+     * @return O produto parcialmente atualizado ou erro 404 caso o produto não exista.
+     */
     @PatchMapping("/{id}")
     public ResponseEntity<Produto> atualizarParcialmenteProduto(@PathVariable Long id, @RequestBody Map<String, Object> fields) {
         Produto produto = produtos.stream()
@@ -137,11 +185,27 @@ public class ProdutoController {
         return ResponseEntity.ok(produto);
     }
 
+    /**
+     * Exceção personalizada para lidar com casos onde um produto não é encontrado.
+     * Esse metodo é chamado automaticamente pelo Spring em exceções do tipo NoSuchElementException.
+     *
+     * @param ex A exceção capturada (detalhes do erro).
+     * @return Mensagem de erro com código HTTP 404 (Not Found).
+     */
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    /**
+     * Filtra produtos da lista com base nos critérios especificados (nome, preço mínimo, categorias).
+     * Este metodo é usado internamente por `buscarProdutos()`.
+     *
+     * @param nome        Nome do produto (opcional).
+     * @param precoMinimo Preço mínimo (opcional).
+     * @param categorias  Categorias desejadas (opcional).
+     * @return Uma lista filtrada de produtos.
+     */
     private List<Produto> filtrarProdutos(String nome, Double precoMinimo, List<String> categorias) {
         return produtos.stream()
                 .filter(p -> nome == null || p.getNome().toLowerCase().contains(nome.toLowerCase()))
@@ -152,6 +216,15 @@ public class ProdutoController {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Ordena uma lista de produtos com base em um campo e ordem (ascendente/descendente).
+     * Este metodo é usado internamente por `buscarProdutos()`.
+     *
+     * @param produtos   Lista de produtos a ser ordenada.
+     * @param ordenarPor Campo de ordenação (ex.: nome, preço).
+     * @param ordem      Ordem da ordenação: ascendente (asc) ou descendente (desc).
+     * @return Uma lista ordenada de produtos.
+     */
     private List<Produto> ordenarProdutos(List<Produto> produtos, String ordenarPor, String ordem) {
         return produtos.stream()
                 .sorted((p1, p2) -> {
@@ -167,6 +240,15 @@ public class ProdutoController {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Aplica paginação a uma lista de produtos.
+     * Este metodo é usado internamente por `buscarProdutos()`.
+     *
+     * @param produtos Lista de produtos a ser paginada.
+     * @param pagina   Número da página.
+     * @param tamanho  Tamanho da página.
+     * @return Uma resposta paginada contendo apenas o subconjunto solicitado.
+     */
     private ResponseEntity<List<Produto>> aplicarPaginacao(List<Produto> produtos, int pagina, int tamanho) {
         final String HEADER_TOTAL_COUNT = "X-Total-Count";
         final String HEADER_TOTAL_PAGES = "X-Total-Pages";
