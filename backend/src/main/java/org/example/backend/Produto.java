@@ -10,11 +10,16 @@ import java.util.List;
 
 public class Produto {
 
+    @NotNull
     private Long id;
 
     @NotBlank(message = "O nome não pode ser vazio.")
     @Size(min = 3, max = 50, message = "O nome deve ter entre 3 e 50 caracteres.")
     private String nome;
+
+    @NotBlank(message = "A descrição não pode ser vazia.")
+    @Size(max = 500, message = "A descrição deve ter no máximo 500 caracteres.")
+    private String descricao;
 
     @NotNull(message = "O preço não pode ser nulo.")
     @Min(value = 0, message = "O preço deve ser maior ou igual a zero.")
@@ -22,22 +27,23 @@ public class Produto {
 
     @NotNull(message = "O estoque não pode ser nulo.")
     @Min(value = 0, message = "O estoque deve ser maior ou igual a zero.")
-    private Integer estoque;
+    private Integer quantidadeEstoque;
 
     private List<String> categorias;
 
     public Produto() {
     }
 
-    public Produto(Long id, String nome, Double preco, int estoque) {
-        this(id, nome, preco, estoque, Collections.emptyList());
+    public Produto(Long id, String nome, String descricao, Double preco, int quantidadeEstoque) {
+        this(id, nome, descricao, preco, quantidadeEstoque, Collections.emptyList());
     }
 
-    public Produto(Long id, String nome, Double preco, int estoque, List<String> categorias) {
+    public Produto(Long id, String nome, String descricao, Double preco, int quantidadeEstoque, List<String> categorias) {
         this.id = id;
         this.nome = nome;
+        this.descricao = descricao;
         this.preco = preco;
-        this.estoque = estoque;
+        this.quantidadeEstoque = quantidadeEstoque;
         this.categorias = categorias;
     }
 
@@ -57,6 +63,14 @@ public class Produto {
         this.nome = nome;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
     public Double getPreco() {
         return preco;
     }
@@ -65,12 +79,12 @@ public class Produto {
         this.preco = preco;
     }
 
-    public int getEstoque() {
-        return estoque;
+    public int getQuantidadeEstoque() {
+        return quantidadeEstoque;
     }
 
-    public void setEstoque(int estoque) {
-        this.estoque = estoque;
+    public void setQuantidadeEstoque(int quantidadeEstoque) {
+        this.quantidadeEstoque = quantidadeEstoque;
     }
 
     public List<String> getCategorias() {

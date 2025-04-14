@@ -20,39 +20,46 @@ import java.util.stream.Collectors;
  * Representa os dados de requisição para criação ou atualização de um produto.
  * Valida os campos fornecidos para garantir consistência e evitar entradas inválidas.
  *
- * @param nome       Nome do produto (obrigatório, entre 3 e 50 caracteres).
- * @param preco      Preço do produto (obrigatório, maior ou igual a zero).
- * @param estoque    Quantidade em estoque (obrigatório, maior ou igual a zero).
- * @param categorias Lista de categorias do produto (opcional, inicializada como vazia se não fornecida).
+ * @param nome              Nome do produto (obrigatório, entre 3 e 50 caracteres).
+ * @param descricao         Descrição do produto (obrigatório, máximo de 500 caracteres).
+ * @param preco             Preço do produto (obrigatório, maior ou igual a zero).
+ * @param quantidadeEstoque Quantidade em estoque (obrigatório, maior ou igual a zero).
+ * @param categorias        Lista de categorias do produto (opcional, inicializada como vazia se não fornecida).
  */
 record RequestProduto(
         @NotBlank(message = "O nome não pode ser vazio.")
         @Size(min = 3, max = 50, message = "O nome deve ter entre 3 e 50 caracteres.")
         String nome,
 
+        @NotBlank(message = "A descrição não pode ser vazia.")
+        @Size(max = 500, message = "A descrição deve ter no máximo 500 caracteres.")
+        String descricao,
+
         @NotNull(message = "O preço não pode ser nulo.")
         @Min(value = 0, message = "O preço deve ser maior ou igual a zero.")
         Double preco,
 
-        @NotNull(message = "O estoque não pode ser nulo.")
-        @Min(value = 0, message = "O estoque deve ser maior ou igual a zero.")
-        Integer estoque,
+        @NotNull(message = "A quantidade em estoque não pode ser nula.")
+        @Min(value = 0, message = "A quantidade em estoque deve ser maior ou igual a zero.")
+        Integer quantidadeEstoque,
 
         List<String> categorias
 ) {
     /**
      * Construtor para a criação de uma instância de {@link RequestProduto}.
      *
-     * @param nome       Nome do produto.
-     * @param preco      Preço do produto.
-     * @param estoque    Quantidade em estoque.
-     * @param categorias Lista de categorias do produto.
+     * @param nome              Nome do produto.
+     * @param descricao         Descrição do produto.
+     * @param preco             Preço do produto.
+     * @param quantidadeEstoque Quantidade em estoque.
+     * @param categorias        Lista de categorias do produto.
      */
-    public RequestProduto(String nome, Double preco, Integer estoque, List<String> categorias) {
+    public RequestProduto(String nome, String descricao, Double preco, Integer quantidadeEstoque, List<String> categorias) {
         this.nome = nome;
+        this.descricao = descricao;
         this.preco = preco;
-        this.estoque = estoque;
-        this.categorias = categorias != null ? categorias : new ArrayList<>();
+        this.quantidadeEstoque = quantidadeEstoque;
+        this.categorias = categorias != null ? categorias : List.of();
     }
 }
 
@@ -62,7 +69,7 @@ record RequestProduto(
  * Também inclui funcionalidades de filtros, ordenação e paginação para consulta de produtos.
  */
 @RestController
-@RequestMapping("/api/produtos")
+@RequestMapping("/produtos")
 public class ProdutoController {
 
     private final List<Produto> produtos = new ArrayList<>();
@@ -73,9 +80,32 @@ public class ProdutoController {
      */
     @PostConstruct
     public void inicializarProdutos() {
-        produtos.add(new Produto(IdGenerator.nextId(Produto.class), "iPhone 14", 7999.0, 50, List.of("Eletrônicos", "Smartphones")));
-        produtos.add(new Produto(IdGenerator.nextId(Produto.class), "Samsung Galaxy S23", 6999.0, 30, List.of("Eletrônicos", "Smartphones")));
-        produtos.add(new Produto(IdGenerator.nextId(Produto.class), "Notebook Dell Inspiron", 4999.0, 20, List.of("Eletrônicos", "Computadores")));
+        produtos.add(new Produto(
+                IdGenerator.nextId(Produto.class),
+                "iPhone 14",
+                "Smartphone Apple com chip A15 Bionic, câmera dupla de 12MP e tela Super Retina XDR de 6,1 polegadas.",
+                7999.0,
+                50,
+                List.of("Eletrônicos", "Smartphones")
+        ));
+
+        produtos.add(new Produto(
+                IdGenerator.nextId(Produto.class),
+                "Samsung Galaxy S23",
+                "Smartphone Samsung com processador Snapdragon 8 Gen 2, câmera tripla de até 50MP e tela Dynamic AMOLED 2X de 6,1 polegadas.",
+                6999.0,
+                30,
+                List.of("Eletrônicos", "Smartphones")
+        ));
+
+        produtos.add(new Produto(
+                IdGenerator.nextId(Produto.class),
+                "Notebook Dell Inspiron",
+                "Notebook com processador Intel Core i5, 8GB de RAM, SSD de 256GB e tela Full HD de 15,6 polegadas.",
+                4999.0,
+                20,
+                List.of("Eletrônicos", "Computadores")
+        ));
     }
 
     /**
@@ -135,8 +165,9 @@ public class ProdutoController {
         Produto produto = new Produto(
                 IdGenerator.nextId(Produto.class),
                 request.nome(),
+                request.descricao(),
                 request.preco(),
-                request.estoque(),
+                request.quantidadeEstoque(),
                 request.categorias()
         );
 
@@ -160,7 +191,7 @@ public class ProdutoController {
     /**
      * Atualiza completamente os dados de um produto existente pelo ID.
      *
-     * @param id                O ID do produto que será atualizado.
+     * @param id      O ID do produto que será atualizado.
      * @param request O objeto Produto atualizado enviado no corpo da requisição.
      * @return O produto atualizado ou erro 404 caso o produto não exista.
      */
@@ -168,8 +199,9 @@ public class ProdutoController {
     public ResponseEntity<Produto> atualizarProduto(@PathVariable Long id, @Valid @RequestBody RequestProduto request) {
         Produto produto = recuperarProdutoPorId(id);
         produto.setNome(request.nome());
+        produto.setDescricao(request.descricao());
         produto.setPreco(request.preco());
-        produto.setEstoque(request.estoque());
+        produto.setQuantidadeEstoque(request.quantidadeEstoque());
         produto.setCategorias(request.categorias());
         return ResponseEntity.ok(produto);
     }
@@ -285,8 +317,6 @@ public class ProdutoController {
                     int comparison = switch (ordenarPor) {
                         case "id" -> Long.compare(p1.getId(), p2.getId());
                         case "nome" -> p1.getNome().compareToIgnoreCase(p2.getNome());
-                        case "preco" -> Double.compare(p1.getPreco(), p2.getPreco());
-                        case "estoque" -> Integer.compare(p1.getEstoque(), p2.getEstoque());
                         default -> 0;
                     };
                     return "desc".equalsIgnoreCase(ordem) ? -comparison : comparison;
