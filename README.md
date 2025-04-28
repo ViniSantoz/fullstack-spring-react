@@ -91,4 +91,4 @@ Certifique-se de que os seguintes softwares estão instalados no ambiente para r
 
 ## Licença
 
-Esse projeto é licenciado sob a [licença MIT](LICENSE)..
+Esse projeto é licenciado sob a [licença MIT](LICENSE)...
