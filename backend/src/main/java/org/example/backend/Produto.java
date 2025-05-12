@@ -1,52 +1,50 @@
 package org.example.backend;
 
-import jakarta.validation.constraints.Min;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
-import java.util.Collections;
-import java.util.List;
-
+@Entity
+@Table(name = "produtos")
 public class Produto {
 
-    @NotNull
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "O nome não pode ser vazio.")
-    @Size(min = 3, max = 50, message = "O nome deve ter entre 3 e 50 caracteres.")
+    @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
+    @Column(nullable = false, length = 100)
     private String nome;
 
-    @NotBlank(message = "A descrição não pode ser vazia.")
-    @Size(max = 500, message = "A descrição deve ter no máximo 500 caracteres.")
-    private String descricao;
-
-    @NotNull(message = "O preço não pode ser nulo.")
-    @Min(value = 0, message = "O preço deve ser maior ou igual a zero.")
+    @NotNull(message = "Preço é obrigatório")
+    @PositiveOrZero(message = "Preço deve ser maior ou igual a zero")
+    @Column(nullable = false)
     private Double preco;
 
-    @NotNull(message = "O estoque não pode ser nulo.")
-    @Min(value = 0, message = "O estoque deve ser maior ou igual a zero.")
-    private Integer quantidadeEstoque;
+    @NotNull(message = "Estoque é obrigatório")
+    @PositiveOrZero(message = "Estoque deve ser maior ou igual a zero")
+    @Column(nullable = false)
+    private Integer estoque;
 
-    private List<String> categorias;
-
+    // Construtores
     public Produto() {
     }
 
-    public Produto(Long id, String nome, String descricao, Double preco, int quantidadeEstoque) {
-        this(id, nome, descricao, preco, quantidadeEstoque, Collections.emptyList());
-    }
-
-    public Produto(Long id, String nome, String descricao, Double preco, int quantidadeEstoque, List<String> categorias) {
-        this.id = id;
+    public Produto(String nome, Double preco, Integer estoque) {
         this.nome = nome;
-        this.descricao = descricao;
         this.preco = preco;
-        this.quantidadeEstoque = quantidadeEstoque;
-        this.categorias = categorias;
+        this.estoque = estoque;
     }
 
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -63,14 +61,6 @@ public class Produto {
         this.nome = nome;
     }
 
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
     public Double getPreco() {
         return preco;
     }
@@ -79,19 +69,11 @@ public class Produto {
         this.preco = preco;
     }
 
-    public int getQuantidadeEstoque() {
-        return quantidadeEstoque;
+    public Integer getEstoque() {
+        return estoque;
     }
 
-    public void setQuantidadeEstoque(int quantidadeEstoque) {
-        this.quantidadeEstoque = quantidadeEstoque;
-    }
-
-    public List<String> getCategorias() {
-        return categorias;
-    }
-
-    public void setCategorias(List<String> categorias) {
-        this.categorias = categorias;
+    public void setEstoque(Integer estoque) {
+        this.estoque = estoque;
     }
 }
