@@ -2,6 +2,10 @@ package org.example.backend;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +23,23 @@ public class ProdutoController {
         this.produtoService = produtoService;
     }
 
-    // Endpoints CRUD básicos
+    // Endpoint principal com suporte a filtragem, paginação e ordenação
     @GetMapping
+    public ResponseEntity<PaginatedResponse<Produto>> listarProdutos(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) Double precoMinimo,
+            @RequestParam(required = false) Double precoMaximo,
+            @RequestParam(required = false) Long categoriaId,
+            @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+
+        Page<Produto> pageProdutos = produtoService.listarComFiltrosEPaginacao(
+                nome, precoMinimo, precoMaximo, categoriaId, pageable);
+
+        return ResponseEntity.ok(PaginatedResponse.of(pageProdutos));
+    }
+
+    // Endpoint para listar todos os produtos (sem paginação) - pode ficar lento com muitos registros
+    @GetMapping("/todos")
     public ResponseEntity<List<Produto>> listarTodos() {
         return ResponseEntity.ok(produtoService.listarTodos());
     }
@@ -95,9 +114,12 @@ public class ProdutoController {
 
     // Consultas por relacionamento
     @GetMapping("/categoria/{categoriaId}")
-    public ResponseEntity<List<Produto>> buscarPorCategoria(@PathVariable Long categoriaId) {
+    public ResponseEntity<PaginatedResponse<Produto>> buscarPorCategoria(
+            @PathVariable Long categoriaId,
+            @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
         try {
-            return ResponseEntity.ok(produtoService.buscarPorCategoria(categoriaId));
+            Page<Produto> page = produtoService.buscarPorCategoriaPaginado(categoriaId, pageable);
+            return ResponseEntity.ok(PaginatedResponse.of(page));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }

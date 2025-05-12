@@ -2,6 +2,9 @@ package org.example.backend;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,11 @@ public class ProdutoService {
     @Transactional(readOnly = true)
     public List<Produto> listarTodos() {
         return produtoRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Produto> listarTodosPaginado(Pageable pageable) {
+        return produtoRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
@@ -130,9 +138,29 @@ public class ProdutoService {
     }
 
     @Transactional(readOnly = true)
+    public Page<Produto> buscarPorCategoriaPaginado(Long categoriaId, Pageable pageable) {
+        Categoria categoria = categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
+        return produtoRepository.findByCategoria(categoria, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public List<Produto> buscarPorFornecedor(Long fornecedorId) {
         Fornecedor fornecedor = fornecedorRepository.findById(fornecedorId)
                 .orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado"));
         return produtoRepository.findByFornecedoresContains(fornecedor);
+    }
+
+    // Métodos para filtragem avançada com paginação
+
+    @Transactional(readOnly = true)
+    public Page<Produto> listarComFiltrosEPaginacao(
+            String nome, Double precoMinimo, Double precoMaximo, Long categoriaId, Pageable pageable) {
+
+        Specification<Produto> spec = ProdutoSpecifications.comFiltros(
+                nome, precoMinimo, precoMaximo, categoriaId
+        );
+
+        return produtoRepository.findAll(spec, pageable);
     }
 }
