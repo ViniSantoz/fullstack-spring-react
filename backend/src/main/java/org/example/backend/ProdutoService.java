@@ -11,12 +11,20 @@ import java.util.List;
 public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final FornecedorRepository fornecedorRepository;
 
     @Autowired
-    public ProdutoService(ProdutoRepository produtoRepository) {
+    public ProdutoService(
+            ProdutoRepository produtoRepository,
+            CategoriaRepository categoriaRepository,
+            FornecedorRepository fornecedorRepository) {
         this.produtoRepository = produtoRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.fornecedorRepository = fornecedorRepository;
     }
 
+    // Métodos básicos CRUD para Produto
     @Transactional(readOnly = true)
     public List<Produto> listarTodos() {
         return produtoRepository.findAll();
@@ -30,43 +38,101 @@ public class ProdutoService {
 
     @Transactional
     public Produto salvar(Produto produto) {
+        // Verificar se a categoria existe
+        if (produto.getCategoria() != null && produto.getCategoria().getId() != null) {
+            Categoria categoria = categoriaRepository.findById(produto.getCategoria().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
+            produto.setCategoria(categoria);
+        }
+
         return produtoRepository.save(produto);
     }
 
     @Transactional
     public Produto atualizar(Long id, Produto produtoAtualizado) {
-        // Verifica se o produto existe
         Produto produtoExistente = buscarPorId(id);
 
-        // Atualiza os campos
         produtoExistente.setNome(produtoAtualizado.getNome());
         produtoExistente.setPreco(produtoAtualizado.getPreco());
         produtoExistente.setEstoque(produtoAtualizado.getEstoque());
 
-        // Salva no banco de dados
+        // Atualizar categoria se fornecida
+        if (produtoAtualizado.getCategoria() != null && produtoAtualizado.getCategoria().getId() != null) {
+            Categoria categoria = categoriaRepository.findById(produtoAtualizado.getCategoria().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
+            produtoExistente.setCategoria(categoria);
+        }
+
+        // Atualizar detalhes do produto se fornecidos
+        if (produtoAtualizado.getDetalheProduto() != null) {
+            if (produtoExistente.getDetalheProduto() == null) {
+                produtoExistente.setDetalheProduto(produtoAtualizado.getDetalheProduto());
+            } else {
+                produtoExistente.getDetalheProduto().setDimensoes(produtoAtualizado.getDetalheProduto().getDimensoes());
+                produtoExistente.getDetalheProduto().setPeso(produtoAtualizado.getDetalheProduto().getPeso());
+                produtoExistente.getDetalheProduto().setMaterial(produtoAtualizado.getDetalheProduto().getMaterial());
+            }
+        }
+
         return produtoRepository.save(produtoExistente);
     }
 
     @Transactional
     public void deletar(Long id) {
-        // Verifica se o produto existe
-        buscarPorId(id);
+        buscarPorId(id); // Verifica se existe
         produtoRepository.deleteById(id);
     }
 
-    // Métodos usando as consultas derivadas do repositório
+    // Métodos para gerenciar relacionamentos
+
+    @Transactional
+    public Produto adicionarFornecedor(Long produtoId, Long fornecedorId) {
+        Produto produto = buscarPorId(produtoId);
+        Fornecedor fornecedor = fornecedorRepository.findById(fornecedorId)
+                .orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado"));
+
+        produto.adicionarFornecedor(fornecedor);
+        return produtoRepository.save(produto);
+    }
+
+    @Transactional
+    public Produto removerFornecedor(Long produtoId, Long fornecedorId) {
+        Produto produto = buscarPorId(produtoId);
+        Fornecedor fornecedor = fornecedorRepository.findById(fornecedorId)
+                .orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado"));
+
+        produto.removerFornecedor(fornecedor);
+        return produtoRepository.save(produto);
+    }
+
+    @Transactional
+    public Produto atualizarDetalhes(Long produtoId, DetalheProduto detalhes) {
+        Produto produto = buscarPorId(produtoId);
+
+        if (produto.getDetalheProduto() == null) {
+            produto.setDetalheProduto(detalhes);
+        } else {
+            produto.getDetalheProduto().setDimensoes(detalhes.getDimensoes());
+            produto.getDetalheProduto().setPeso(detalhes.getPeso());
+            produto.getDetalheProduto().setMaterial(detalhes.getMaterial());
+        }
+
+        return produtoRepository.save(produto);
+    }
+
+    // Métodos para buscar produtos relacionados
+
     @Transactional(readOnly = true)
-    public List<Produto> buscarPorNome(String nome) {
-        return produtoRepository.findByNomeContainingIgnoreCase(nome);
+    public List<Produto> buscarPorCategoria(Long categoriaId) {
+        Categoria categoria = categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
+        return produtoRepository.findByCategoria(categoria);
     }
 
     @Transactional(readOnly = true)
-    public List<Produto> buscarPorPrecoMaximo(Double preco) {
-        return produtoRepository.findByPrecoLessThanEqual(preco);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Produto> buscarPorEstoqueMinimo(Integer estoque) {
-        return produtoRepository.findByEstoqueGreaterThan(estoque);
+    public List<Produto> buscarPorFornecedor(Long fornecedorId) {
+        Fornecedor fornecedor = fornecedorRepository.findById(fornecedorId)
+                .orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado"));
+        return produtoRepository.findByFornecedoresContains(fornecedor);
     }
 }

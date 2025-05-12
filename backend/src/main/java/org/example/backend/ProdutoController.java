@@ -19,17 +19,16 @@ public class ProdutoController {
         this.produtoService = produtoService;
     }
 
+    // Endpoints CRUD básicos
     @GetMapping
     public ResponseEntity<List<Produto>> listarTodos() {
-        List<Produto> produtos = produtoService.listarTodos();
-        return ResponseEntity.ok(produtos);
+        return ResponseEntity.ok(produtoService.listarTodos());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
         try {
-            Produto produto = produtoService.buscarPorId(id);
-            return ResponseEntity.ok(produto);
+            return ResponseEntity.ok(produtoService.buscarPorId(id));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
@@ -37,15 +36,13 @@ public class ProdutoController {
 
     @PostMapping
     public ResponseEntity<Produto> criar(@Valid @RequestBody Produto produto) {
-        Produto novoProduto = produtoService.salvar(produto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoProduto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(produtoService.salvar(produto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Produto> atualizar(@PathVariable Long id, @Valid @RequestBody Produto produto) {
         try {
-            Produto produtoAtualizado = produtoService.atualizar(id, produto);
-            return ResponseEntity.ok(produtoAtualizado);
+            return ResponseEntity.ok(produtoService.atualizar(id, produto));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
@@ -61,23 +58,57 @@ public class ProdutoController {
         }
     }
 
-    // Endpoints adicionais utilizando consultas derivadas
+    // Endpoints para gerenciar relacionamentos
 
-    @GetMapping("/nome")
-    public ResponseEntity<List<Produto>> buscarPorNome(@RequestParam String nome) {
-        List<Produto> produtos = produtoService.buscarPorNome(nome);
-        return ResponseEntity.ok(produtos);
+    // Detalhes do Produto (OneToOne)
+    @PostMapping("/{id}/detalhes")
+    public ResponseEntity<Produto> adicionarDetalhes(@PathVariable Long id, @Valid @RequestBody DetalheProduto detalhes) {
+        try {
+            return ResponseEntity.ok(produtoService.atualizarDetalhes(id, detalhes));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @GetMapping("/preco")
-    public ResponseEntity<List<Produto>> buscarPorPrecoMaximo(@RequestParam Double precoMaximo) {
-        List<Produto> produtos = produtoService.buscarPorPrecoMaximo(precoMaximo);
-        return ResponseEntity.ok(produtos);
+    // Fornecedores (ManyToMany)
+    @PostMapping("/{produtoId}/fornecedores/{fornecedorId}")
+    public ResponseEntity<Produto> adicionarFornecedor(
+            @PathVariable Long produtoId,
+            @PathVariable Long fornecedorId) {
+        try {
+            return ResponseEntity.ok(produtoService.adicionarFornecedor(produtoId, fornecedorId));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @GetMapping("/estoque")
-    public ResponseEntity<List<Produto>> buscarPorEstoqueMinimo(@RequestParam Integer estoqueMinimo) {
-        List<Produto> produtos = produtoService.buscarPorEstoqueMinimo(estoqueMinimo);
-        return ResponseEntity.ok(produtos);
+    @DeleteMapping("/{produtoId}/fornecedores/{fornecedorId}")
+    public ResponseEntity<Produto> removerFornecedor(
+            @PathVariable Long produtoId,
+            @PathVariable Long fornecedorId) {
+        try {
+            return ResponseEntity.ok(produtoService.removerFornecedor(produtoId, fornecedorId));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Consultas por relacionamento
+    @GetMapping("/categoria/{categoriaId}")
+    public ResponseEntity<List<Produto>> buscarPorCategoria(@PathVariable Long categoriaId) {
+        try {
+            return ResponseEntity.ok(produtoService.buscarPorCategoria(categoriaId));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/fornecedor/{fornecedorId}")
+    public ResponseEntity<List<Produto>> buscarPorFornecedor(@PathVariable Long fornecedorId) {
+        try {
+            return ResponseEntity.ok(produtoService.buscarPorFornecedor(fornecedorId));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

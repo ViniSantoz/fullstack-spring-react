@@ -7,12 +7,11 @@ import java.util.List;
 
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
-    // Spring Data JPA fornece métodos básicos: save(), findById(), findAll(), delete(), etc.
-
-    // Exemplos de consultas derivadas
     List<Produto> findByNomeContainingIgnoreCase(String nome);
-
     List<Produto> findByPrecoLessThanEqual(Double preco);
-
     List<Produto> findByEstoqueGreaterThan(Integer estoque);
+
+    // Consultas relacionadas aos relacionamentos
+    List<Produto> findByCategoria(Categoria categoria);
+    List<Produto> findByFornecedoresContains(Fornecedor fornecedor);
 }
