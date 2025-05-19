@@ -30,7 +30,8 @@ public class ProdutoService {
     // Métodos básicos CRUD para Produto
     @Transactional(readOnly = true)
     public List<Produto> listarTodos() {
-        return produtoRepository.findAll();
+        //return produtoRepository.findAll();
+        return produtoRepository.findAllWithDetalhes();
     }
 
     @Transactional(readOnly = true)

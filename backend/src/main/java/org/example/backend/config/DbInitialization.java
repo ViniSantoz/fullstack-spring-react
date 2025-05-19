@@ -24,32 +24,34 @@ public class DbInitialization {
     @Bean
     public CommandLineRunner inicializarDados() {
         return args -> {
-            Categoria smartphones = new Categoria("Smartphones");
-            Categoria notebooks = new Categoria("Notebooks");
+            if (categoriaRepository.count() == 0) {
+                Categoria smartphones = new Categoria("Smartphones");
+                Categoria notebooks = new Categoria("Notebooks");
 
-            smartphones = categoriaRepository.save(smartphones);
-            notebooks = categoriaRepository.save(notebooks);
+                smartphones = categoriaRepository.save(smartphones);
+                notebooks = categoriaRepository.save(notebooks);
 
-            produtoRepository.saveAll(List.of(
-                    new Produto(
-                            "iPhone 14",
-                            7999.0,
-                            50,
-                            smartphones
-                    ),
-                    new Produto(
-                            "Samsung Galaxy S23",
-                            6999.0,
-                            30,
-                            smartphones
-                    ),
-                    new Produto(
-                            "Notebook Dell Inspiron",
-                            4999.0,
-                            20,
-                            notebooks
-                    )
-            ));
+                produtoRepository.saveAll(List.of(
+                        new Produto(
+                                "iPhone 14",
+                                7999.0,
+                                50,
+                                smartphones
+                        ),
+                        new Produto(
+                                "Samsung Galaxy S23",
+                                6999.0,
+                                30,
+                                smartphones
+                        ),
+                        new Produto(
+                                "Notebook Dell Inspiron",
+                                4999.0,
+                                20,
+                                notebooks
+                        )
+                ));
+            }
         };
     }
 }
