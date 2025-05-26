@@ -2,8 +2,51 @@
 'use client'
 import {useState} from 'react';
 
+// Interface para definir a estrutura de uma tarefa
+interface Tarefa {
+    id: number;
+    titulo: string;
+    status: 'Pendente' | 'Em Andamento' | 'Concluída';
+    categoria: 'Trabalho' | 'Pessoal' | 'Estudos';
+    prioridade: 'Alta' | 'Média' | 'Baixa';
+}
+
+// Tipos para os filtros
+type TipoStatus = 'Todas' | 'Pendente' | 'Em Andamento' | 'Concluída';
+type TipoCategoria = 'Todas' | 'Trabalho' | 'Pessoal' | 'Estudos';
+type TipoPrioridade = 'Todas' | 'Alta' | 'Média' | 'Baixa';
+
+// Interfaces para os componentes
+interface RadioButtonProps {
+    id: string;
+    name: string;
+    label: string;
+    checked: boolean;
+    onChange: (value: string) => void;
+}
+
+interface FilterSectionProps {
+    title: string;
+    options: string[];
+    selectedOption: string;
+    setSelectedOption: (value: string) => void;
+    name: string;
+}
+
+interface PriorityBadgeProps {
+    priority: 'Alta' | 'Média' | 'Baixa';
+}
+
+interface StatusBadgeProps {
+    status: 'Pendente' | 'Em Andamento' | 'Concluída';
+}
+
+interface CategoryBadgeProps {
+    category: 'Trabalho' | 'Pessoal' | 'Estudos';
+}
+
 // Dados fictícios para nossos exemplos
-const tarefasIniciais = [
+const tarefasIniciais: Tarefa[] = [
     {id: 1, titulo: 'Finalizar relatório', status: 'Pendente', categoria: 'Trabalho', prioridade: 'Alta'},
     {id: 2, titulo: 'Comprar mantimentos', status: 'Pendente', categoria: 'Pessoal', prioridade: 'Média'},
     {id: 3, titulo: 'Revisar código', status: 'Em Andamento', categoria: 'Trabalho', prioridade: 'Alta'},
@@ -16,15 +59,15 @@ const tarefasIniciais = [
 
 export default function FiltrosComponentes() {
     // Estados para filtros
-    const [statusFilter, setStatusFilter] = useState('Todas');
-    const [categoriaFilter, setCategoriaFilter] = useState('Todas');
-    const [prioridadeFilter, setPrioridadeFilter] = useState('Todas');
+    const [statusFilter, setStatusFilter] = useState<TipoStatus>('Todas');
+    const [categoriaFilter, setCategoriaFilter] = useState<TipoCategoria>('Todas');
+    const [prioridadeFilter, setPrioridadeFilter] = useState<TipoPrioridade>('Todas');
 
     // Estado para tarefas
-    const [tarefas, setTarefas] = useState(tarefasIniciais);
+    const [tarefas, setTarefas] = useState<Tarefa[]>(tarefasIniciais);
 
     // Estado para controle do menu de filtros em dispositivos móveis
-    const [showFilters, setShowFilters] = useState(false);
+    const [showFilters, setShowFilters] = useState<boolean>(false);
 
     // Função para filtrar tarefas
     const filteredTarefas = tarefas.filter(tarefa => {
@@ -34,7 +77,7 @@ export default function FiltrosComponentes() {
     });
 
     // Componente de botão de rádio para filtros
-    function RadioButton({id, name, label, checked, onChange}) {
+    function RadioButton({id, name, label, checked, onChange}: RadioButtonProps) {
         return (
             <div className="flex items-center mb-3">
                 <input
@@ -53,7 +96,7 @@ export default function FiltrosComponentes() {
     }
 
     // Componente de seção de filtro
-    function FilterSection({title, options, selectedOption, setSelectedOption, name}) {
+    function FilterSection({title, options, selectedOption, setSelectedOption, name}: FilterSectionProps) {
         return (
             <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
@@ -76,8 +119,8 @@ export default function FiltrosComponentes() {
     }
 
     // Componente de badge para prioridade
-    function PriorityBadge({priority}) {
-        const colorMap = {
+    function PriorityBadge({priority}: PriorityBadgeProps) {
+        const colorMap: Record<'Alta' | 'Média' | 'Baixa', string> = {
             'Alta': 'bg-red-100 text-red-800',
             'Média': 'bg-orange-100 text-orange-800',
             'Baixa': 'bg-green-100 text-green-800'
@@ -92,14 +135,14 @@ export default function FiltrosComponentes() {
     }
 
     // Componente de badge para status
-    function StatusBadge({status}) {
-        const colorMap = {
+    function StatusBadge({status}: StatusBadgeProps) {
+        const colorMap: Record<'Pendente' | 'Em Andamento' | 'Concluída', string> = {
             'Pendente': 'bg-gray-100 text-gray-800',
             'Em Andamento': 'bg-blue-100 text-blue-800',
             'Concluída': 'bg-green-100 text-green-800'
         };
 
-        const iconMap = {
+        const iconMap: Record<'Pendente' | 'Em Andamento' | 'Concluída', string> = {
             'Pendente': '',
             'Em Andamento': '⏳',
             'Concluída': '✅'
@@ -113,8 +156,8 @@ export default function FiltrosComponentes() {
     }
 
     // Componente de badge para categoria
-    function CategoryBadge({category}) {
-        const iconMap = {
+    function CategoryBadge({category}: CategoryBadgeProps) {
+        const iconMap: Record<'Trabalho' | 'Pessoal' | 'Estudos', string> = {
             'Trabalho': '💼',
             'Pessoal': '👤',
             'Estudos': '📚'
@@ -177,7 +220,7 @@ export default function FiltrosComponentes() {
                             title="Status"
                             options={['Todas', 'Pendente', 'Em Andamento', 'Concluída']}
                             selectedOption={statusFilter}
-                            setSelectedOption={setStatusFilter}
+                            setSelectedOption={(value: string) => setStatusFilter(value as TipoStatus)}
                             name="status"
                         />
 
@@ -186,7 +229,7 @@ export default function FiltrosComponentes() {
                             title="Categoria"
                             options={['Todas', 'Trabalho', 'Pessoal', 'Estudos']}
                             selectedOption={categoriaFilter}
-                            setSelectedOption={setCategoriaFilter}
+                            setSelectedOption={(value: string) => setStatusFilter(value as TipoStatus)}
                             name="categoria"
                         />
 
@@ -195,7 +238,8 @@ export default function FiltrosComponentes() {
                             title="Prioridade"
                             options={['Todas', 'Alta', 'Média', 'Baixa']}
                             selectedOption={prioridadeFilter}
-                            setSelectedOption={setPrioridadeFilter}
+                            setSelectedOption={(value: string) => setStatusFilter(value as TipoStatus)
+                            }
                             name="prioridade"
                         />
                     </div>
@@ -250,9 +294,9 @@ export default function FiltrosComponentes() {
                     <h3 className="text-lg font-medium mb-3">1. Estados para os filtros</h3>
                     <pre className="bg-gray-800 text-white p-3 rounded text-sm overflow-x-auto">
             {`// Estados para filtros
-const [statusFilter, setStatusFilter] = useState('Todas');
-const [categoriaFilter, setCategoriaFilter] = useState('Todas');
-const [prioridadeFilter, setPrioridadeFilter] = useState('Todas');`}
+const [statusFilter, setStatusFilter] = useState<TipoStatus>('Todas');
+const [categoriaFilter, setCategoriaFilter] = useState<TipoCategoria>('Todas');
+const [prioridadeFilter, setPrioridadeFilter] = useState<TipoPrioridade>('Todas');`}
           </pre>
                 </div>
 
@@ -271,7 +315,7 @@ const filteredTarefas = tarefas.filter(tarefa => {
                 <div className="mb-6">
                     <h3 className="text-lg font-medium mb-3">3. Componente para os botões de rádio</h3>
                     <pre className="bg-gray-800 text-white p-3 rounded text-sm overflow-x-auto">
-            {`function RadioButton({ id, name, label, checked, onChange }) {
+            {`function RadioButton({ id, name, label, checked, onChange }: RadioButtonProps) {
   return (
     <div className="flex items-center mb-3">
       <input
@@ -294,7 +338,7 @@ const filteredTarefas = tarefas.filter(tarefa => {
                 <div>
                     <h3 className="text-lg font-medium mb-3">4. Componente de seção de filtro</h3>
                     <pre className="bg-gray-800 text-white p-3 rounded text-sm overflow-x-auto">
-            {`function FilterSection({ title, options, selectedOption, setSelectedOption, name }) {
+            {`function FilterSection({ title, options, selectedOption, setSelectedOption, name }: FilterSectionProps) {
   return (
     <div className="mb-6">
       <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">

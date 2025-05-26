@@ -1,6 +1,7 @@
 'use client'
 
 import {useState, useEffect} from 'react';
+import AuthStatus from "@/components/auth/auth-status";
 
 export default function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -264,6 +265,7 @@ export default function Dashboard() {
                                 <div className="hidden md:block mr-3 text-right">
                                     <div className="text-sm font-medium text-gray-800 dark:text-gray-200">John Doe</div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400">Admin</div>
+                                    <AuthStatus />
                                 </div>
                                 <div
                                     className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center text-white text-lg font-bold">
