@@ -13,17 +13,21 @@ export default function AuthStatus() {
     if (session) {
         return (
             <>
-                <p>Signed in as {session.user?.username || session.user?.email}</p>
-                {session.user?.roles && <p>Roles: {session.user.roles.join(', ')}</p>}
-                <button onClick={() => signOut({ callbackUrl: '/' })}>Sign out</button>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <p>Signed in as {session.user?.username || session.user?.email}</p>
+                    {session.user?.roles && <p>Roles: {session.user.roles.join(', ')}</p>}
+                    <button onClick={() => signOut({ callbackUrl: '/' })}>Sign out</button>
+                </div>
             </>
         );
     }
 
     return (
         <>
-            <p>Not signed in</p>
-            <button onClick={() => signIn()}>Sign in</button>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+                <p>Not signed in</p>
+                <button onClick={() => signIn()}>Sign in</button>
+            </div>
         </>
     );
 }
